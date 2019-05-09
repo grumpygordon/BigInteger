@@ -336,21 +336,13 @@ uint32_t xor_(uint32_t a, uint32_t b) {
 
 big_integer bit_operation(big_integer a, big_integer const &b, func f) {
     big_integer c;
-    c.number.resize(a.size(), b.size());
-    big_integer inv_a, inv_b;
+    c.number.resize(std::max(a.size(), b.size()));
+    big_integer inv_a = a, inv_b = b;
     if (a.sign) {
-        inv_a = a + 1;
+        inv_a++;
         for (size_t i = 0; i < inv_a.number.size(); i++)
             inv_a.number[i] = ~inv_a.number[i];
-    } else {
-		inv_a = a;
-	}
-    if (b.sign) {
-        inv_b = b + 1;
-        for (size_t i = 0; i < inv_b.number.size(); i++)
-            inv_b.number[i] = ~inv_b.number[i];
-    } else {
-		inv_b = b;
+		return bit_operation(b, a, f);
 	}
 	if (inv_a.size() < inv_b.size())
 		std::swap(inv_a, inv_b);
@@ -402,17 +394,17 @@ big_integer operator<<(big_integer a, int b) {
 
 big_integer operator>>(big_integer a, int b) {
     size_t sh = (b & 31);
-    uint32_t w = 0, s;
+    uint32_t w = 0;
+    uint64_t s;
     a.number.erase(a.number.begin(), a.number.begin() + (b >> 5));
     for (ptrdiff_t i = a.number.size() - 1; i >= 0; i--) {
-        if (sh == 0)
-			s = 0;
-		else
-			s = (a.number[i] << (32 - sh));
-        a.number[i] = ((a.number[i] >> sh) ^ w);
-        w = s;
+        s = (a.number[i] << (32 - sh));
+        a.number[i] = ((a.number[i] >> sh) | w);
+        w = (uint32_t) s;
     }
     normalize(a);
+    if (a.sign)
+        a--;
     return a;
 }
 
