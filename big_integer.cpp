@@ -337,13 +337,16 @@ uint32_t xor_(uint32_t a, uint32_t b) {
 big_integer bit_operation(big_integer a, big_integer const &b, func f) {
     big_integer c;
     c.number.resize(std::max(a.size(), b.size()));
-    big_integer inv_a = a, inv_b = b;
-    if (a.sign) {
-        inv_a++;
-        for (size_t i = 0; i < inv_a.number.size(); i++)
-            inv_a.number[i] = ~inv_a.number[i];
-		return bit_operation(b, a, f);
-	}
+	auto ref = [&] (big_integer x) {
+		big_integer inv_x = x;
+		if (x.sign) {
+			inv_x++;
+			for (size_t i = 0; i < inv_x.number.size(); i++)
+				inv_x.number[i] = ~inv_x.number[i];
+		}
+		return inv_x;
+	};
+    big_integer inv_a = ref(a), inv_b = ref(b);
 	if (inv_a.size() < inv_b.size())
 		std::swap(inv_a, inv_b);
 	while (inv_a.size() > inv_b.size())
