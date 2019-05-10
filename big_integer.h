@@ -4,11 +4,14 @@
 #include <cstddef>
 #include <iosfwd>
 #include <cstdint>
-#include <vector>
+#include "vector.h"
+#include "vector.cpp"
 
-typedef uint32_t (*func)(uint32_t a, uint32_t b);
 
 struct big_integer {
+	
+	typedef uint32_t (*func)(uint32_t a, uint32_t b);
+    
     big_integer();
 
     big_integer(big_integer const &a);
@@ -112,7 +115,7 @@ public:
 	size_t size() const;
 
 private:
-    std::vector<uint32_t> number;
+    vector<uint32_t> number;
     bool sign;
 
 };

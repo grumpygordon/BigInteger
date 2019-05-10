@@ -1,5 +1,5 @@
 #include "big_integer.h"
-
+#include "vector.h"
 #include <cstring>
 #include <stdexcept>
 #include <algorithm>
@@ -334,6 +334,8 @@ uint32_t xor_(uint32_t a, uint32_t b) {
     return a ^ b;
 }
 
+typedef uint32_t (*func)(uint32_t a, uint32_t b);
+
 big_integer bit_operation(big_integer a, big_integer const &b, func f) {
     big_integer c;
     c.number.resize(std::max(a.size(), b.size()));
@@ -355,8 +357,8 @@ big_integer bit_operation(big_integer a, big_integer const &b, func f) {
         c.number[i] = (*f)(inv_a.number[i], inv_b.number[i]);
     c.sign = (*f)(a.sign, b.sign);
     if (c.sign) {
-		for (uint32_t &i : c.number)
-			i = ~i;
+		for (size_t i = 0; i != c.number.size(); i++)
+			c.number[i] = ~c.number[i];
 		c--;
     }
     return c;
@@ -390,8 +392,10 @@ big_integer operator<<(big_integer a, int b) {
     if (w > 0) {
         a.number.push_back(w);
 	}
-	std::vector<uint32_t> z(b >> 5, 0);
-	a.number.insert(a.number.begin(), z.begin(), z.end());
+	vector<uint32_t> z((b >> 5) + a.size(), 0);
+	for (size_t i = 0; i != a.number.size(); i++)
+		z[i + (b >> 5)] = a.number[i];
+	z.swap(a.number);
     return a;
 }
 
@@ -399,7 +403,9 @@ big_integer operator>>(big_integer a, int b) {
     size_t sh = (b & 31);
     uint32_t w = 0;
     uint64_t s;
-    a.number.erase(a.number.begin(), a.number.begin() + (b >> 5));
+	for (size_t i = (b >> 5); i < a.number.size(); i++)
+		a.number[i - (b >> 5)] = a.number[i];
+	a.number.resize(std::max(size_t(0), a.size() - (b >> 5)));
     for (ptrdiff_t i = a.number.size() - 1; i >= 0; i--) {
         s = (a.number[i] << (32 - sh));
         a.number[i] = ((a.number[i] >> sh) | w);
