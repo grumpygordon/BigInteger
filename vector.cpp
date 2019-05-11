@@ -2,13 +2,14 @@
 #include <algorithm>
 
 template<typename T>
-vector<T>::vector() : vector(0) {}
+vector<T>::vector() : vector(1) {}
 
 template<typename T>
 vector<T>::vector(size_t a) : vector(a, 0) {}
-
+#include <cassert>
 template<typename T>
 vector<T>::vector(size_t a, T w) {
+	assert(a > 0);
     small = (a == 1);
     if (small) {
         num = w;
@@ -84,8 +85,6 @@ T &vector<T>::operator[](size_t i) {
     return (*shared)[i];
 }
 
-#include <cassert>
-
 template<typename T>
 void vector<T>::pop_back() {
     if (small) {
@@ -106,11 +105,7 @@ void vector<T>::pop_back() {
 
 template<typename T>
 void vector<T>::push_back(T x) {
-    if (small) {
-		increase();
-        shared->push_back(x);
-        return;
-    }
+	increase();
     take_control();
     shared->push_back(x);
 }
@@ -129,10 +124,8 @@ void vector<T>::resize(size_t size) {
 
 template<typename T>
 void vector<T>::resize(size_t a, T w) {
+	assert(a != 0);
 	if (small) {
-		if (a == 0) {
-			assert(0);
-		}
 		if (a == 1)
 			return;
 		increase();
@@ -150,7 +143,7 @@ void vector<T>::take_control() {
 template<typename T>
 vector<T>::~vector() {
 	if (!small) {
-		shared.~shared_ptr();
+		shared.reset();
 	}
 }
 

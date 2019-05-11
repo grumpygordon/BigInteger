@@ -396,6 +396,7 @@ big_integer operator<<(big_integer a, int b) {
 	for (size_t i = 0; i != a.number.size(); i++)
 		z[i + (b >> 5)] = a.number[i];
 	z.swap(a.number);
+    //swap(z, a.number);
     return a;
 }
 
